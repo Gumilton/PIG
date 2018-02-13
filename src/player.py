@@ -4,15 +4,17 @@ import numpy as np
 class RandomPlayer():
 
     def __init__(self):
-        pass
+        self.cards = []
+        self.collected_cards = []
 
     def add_cards(self, card_list):
         self.cards = sorted(card_list)
+        self.collected_cards = []
 
     def re_add(self, card):
         self.cards.append(card)
 
-    def get_available_choices(self, shown_cards, lead_card):
+    def _get_available_choices(self, shown_cards, lead_card):
         if lead_card is None:
             return self.cards
 
@@ -32,8 +34,11 @@ class RandomPlayer():
 
         return available_choices
 
-    def render(self, shown_cards, lead_card):
-        available_choices = self.get_available_choices(shown_cards, lead_card)
+    def render(self, shown_cards, lead_card, previous=None):
+        available_choices = self._get_available_choices(shown_cards, lead_card)
         card = np.random.choice(available_choices)
         self.cards.remove(card)
         return card
+
+    def collect(self, cards):
+        self.collected_cards.extend(cards)
