@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class RandomPlayer():
+class PlayerRandom():
 
     def __init__(self):
         self.cards = []
