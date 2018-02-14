@@ -9,18 +9,18 @@ def show_cards(pl_list):
     return shown_cards
 
 
-def play_one_round(pl_list, starter, shown_cards, rendered_cards):
+def play_one_round(pl_list, starter, shown_cards, rendered_cards, game_round):
     collected_cards = {pl: [] for pl in range(len(pl_list))}
     collected_value_cards = {pl: [] for pl in range(len(pl_list))}
 
     c1 = pl_list[starter].render(shown_cards=shown_cards, previous=[],
-                                 rendered_cards=rendered_cards)
+                                 rendered_cards=rendered_cards, game_round=game_round)
     c2 = pl_list[(starter + 1) % 4].render(shown_cards=shown_cards, previous=[c1],
-                                           rendered_cards=rendered_cards)
+                                           rendered_cards=rendered_cards, game_round=game_round)
     c3 = pl_list[(starter + 2) % 4].render(shown_cards=shown_cards, previous=[c1, c2],
-                                           rendered_cards=rendered_cards)
+                                           rendered_cards=rendered_cards, game_round=game_round)
     c4 = pl_list[(starter + 3) % 4].render(shown_cards=shown_cards, previous=[c1, c2, c3],
-                                           rendered_cards=rendered_cards)
+                                           rendered_cards=rendered_cards, game_round=game_round)
     cards = [c1, c2, c3, c4]
     collector = (starter + who_collect(c1, c2, c3, c4)) % 4
 
@@ -56,7 +56,7 @@ def play_one_game(pl_list, starter=None):
     while round_game < 13:
         round_game += 1
         _, _, collector, collected_cards, collected_value_cards, \
-            rendered_cards = play_one_round(pl_list, starter, shown_cards, rendered_cards)
+            rendered_cards = play_one_round(pl_list, starter, shown_cards, rendered_cards, round_game)
         starter = collector
 
         for pl, cards in collected_cards.items():
