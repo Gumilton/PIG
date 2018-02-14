@@ -3,13 +3,25 @@ import numpy as np
 
 class PlayerRandom():
 
-    def __init__(self):
+    def __init__(self, name=str(np.random.random_integers(10))):
+        self.name = name
         self.cards = []
         self.collected_cards = []
+        self.collected_value_cards = []
 
     def add_cards(self, card_list):
         self.cards = sorted(card_list)
         self.collected_cards = []
+        self.collected_value_cards = []
+
+    def get_name(self):
+        return self.name
+
+    def get_holding_cards(self):
+        return self.cards
+
+    def show_card(self, **kwargs):
+        return []
 
     def re_add(self, card):
         self.cards.append(card)
@@ -34,11 +46,15 @@ class PlayerRandom():
 
         return available_choices
 
-    def render(self, shown_cards, lead_card, previous=None):
+    def render(self, shown_cards, previous, **kwargs):
+        lead_card = None if len(previous) == 0 else previous[0]
         available_choices = self._get_available_choices(shown_cards, lead_card)
         card = np.random.choice(available_choices)
         self.cards.remove(card)
         return card
 
-    def collect(self, cards):
+    def collect(self, cards, **kwargs):
         self.collected_cards.extend(cards)
+
+    def collect_value_cards(self, card, **kwargs):
+        self.collected_value_cards.append(card)

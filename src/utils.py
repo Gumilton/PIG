@@ -12,16 +12,24 @@ SHAPE_DECODE = {0: "club",
                 2: "diamond",
                 3: "heart"}
 
-SCORE_ADD = {23: lambda x: x + 100,
-             35: lambda x: x - 100,
-             51: lambda x: x + 50,
-             50: lambda x: x + 40,
-             49: lambda x: x + 30,
-             48: lambda x: x + 20}
+PIG_CODE = 23
+SHEEP_CODE = 35
+MUL_CODE = 8
+REDA_CODE = 51
 
-SCORE_ADD.update({i: lambda x: x + 10 for i in range(42, 48, 1)})
+SCORE_PIG = lambda x: x + 100
+SCORE_SHEEP = lambda x: x - 100
+SCORE_ADD = {REDA_CODE: 50,
+             50: 40,
+             49: 30,
+             48: 20}
 
-SCORE_MUL = {8: lambda x: x * 2}
+SCORE_ADD.update({i: 10 for i in range(42, 48, 1)})
+
+SCORE_MUL = lambda x: x * 2
+
+VALUE_CARDS = [23, 35, 8] + list(range(39, 52))
+
 
 def reverse_dict(dic):
     return {v: k for k, v in dic.items()}
@@ -54,14 +62,27 @@ def who_collect(c1, c2, c3, c4):
 
 
 def card_decode(n):
+    if n < 0 or n > 51:
+        raise ValueError("N must be [0,51] inclusive")
     shape = n // 13
     digit = n % 13
     return SHAPE_DECODE[shape] + "-" + DIGIT_DECODE[digit]
 
 
+def decode_card_list(ns):
+    return [card_decode(n) for n in ns]
+
+
 def card_encode(card):
     shape, digit = card.split("-")
+    # if shape in SHAPE_ENCODE and digit in DIGIT_ENCODE:
     return SHAPE_ENCODE[shape] * 13 + DIGIT_ENCODE[digit]
+    # else:
+    #     raise KeyError("Card name definition error")
+
+
+def encode_card_list(cards):
+    return [card_encode(card) for card in cards]
 
 
 def all_heart(cards):
@@ -72,6 +93,9 @@ def all_heart(cards):
 
 
 def all_collected(cards):
+    if len(cards) < 16:
+        return False
+
     if all_heart(cards):
         if 8 in cards:
             if 23 in cards:
@@ -80,6 +104,37 @@ def all_collected(cards):
     return False
 
 
-def calculate_scores(player_cards):
-    # TODO: implement score calculation
-    return {pl: 0 for pl in range(4)}
+def calculate_scores(player_cards, shown_cards):
+    scores = {pl: {PIG_CODE: 0, SHEEP_CODE: 0, MUL_CODE: 1, REDA_CODE: 0}
+            for pl in player_cards}
+
+    for pl, cards in player_cards.items():
+        if all_collected(cards):
+            pig = 200 if PIG_CODE in shown_cards else 100
+            sheep = 200 if SHEEP_CODE in shown_cards else 100
+            heart = 400 if REDA_CODE in shown_cards else 200
+            mul = 4 if MUL_CODE in shown_cards else 2
+            score = (pig + sheep + heart) * mul
+            final_score = {p: score for p in player_cards}
+            final_score[pl] = 0
+            return final_score
+
+        for card in cards:
+            if card == PIG_CODE:
+                scores[pl][PIG_CODE] = 200 if card in shown_cards else 100
+            elif card == SHEEP_CODE:
+                scores[pl][SHEEP_CODE] = -200 if card in shown_cards else -100
+            elif card == MUL_CODE:
+                scores[pl][MUL_CODE] = 4 if card in shown_cards else 2
+            elif card in SCORE_ADD:
+                scores[pl][REDA_CODE] += SCORE_ADD[card]
+
+        if REDA_CODE in shown_cards:
+            scores[pl][REDA_CODE] *= 2
+
+        if all_heart(cards):
+            scores[pl][REDA_CODE] *= -1
+
+    return {pl: (score_dict[PIG_CODE] + score_dict[SHEEP_CODE] + score_dict[REDA_CODE]) * score_dict[MUL_CODE]
+            for pl, score_dict in scores.items()}
+
